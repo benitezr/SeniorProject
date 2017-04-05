@@ -8,6 +8,7 @@ using System.Data.Entity.Core.EntityClient;
 using System.IO;
 using System.Data.SqlClient;
 using System.Data;
+using System.Threading.Tasks;
 
 namespace FirstIteration.Services
 {
@@ -15,14 +16,39 @@ namespace FirstIteration.Services
     {
         private const int batchSize = 500;
         public bool IsCanceled { get; set; }
+        private delegate void ProcessDelegate(CsvReader cr, DataTable dt);
 
-        public void ProcessTransactions(Stream inputStream)
+        public long ProcessTransactions(Stream inputStream, IProgress<long> progress)
+        {
+            long rowsCopied;
+            string[] columnNames = new string[] { "UniqueID", "DeptID", "StaffID", "FundMasterID", "TransType", "TransDate",
+            "TransTransfer", "TransAdjustment", "TransCredit", "TransCharge" };
+
+            rowsCopied = Process(inputStream, "Transactions", columnNames, progress, (csvreader, dataTable) =>
+            {
+                //Parse through csv fields and store them
+                //Add range to the data table
+            });
+
+            return rowsCopied;
+        }
+
+        public void ProcessDepartments(Stream inputStream, IProgress<long> progress)
+        {
+
+        }
+
+        public void ProcessEmployess(Stream inputStream, IProgress<long> progress)
+        {
+
+        }
+
+        private long Process(Stream inputStream, string table, string[] columnHeaders, IProgress<long> progress, ProcessDelegate processFile)
         {
             int readCount = 0;
             long rowsCopied = 0;
-            string tableName = "Transactions";
-            string[] columnNames = new string[] { "UniqueID", "DeptID", "StaffID", "FundMasterID", "TransType", "TransDate",
-                "TransTransfer", "TransAdjustment", "TransCredit", "TransCharge", "TransAmount" };
+            string tableName = table;            
+            string[] columnNames = columnHeaders;
 
             using (var csvreader = new CsvReader(new StreamReader(inputStream)))
             {
@@ -39,6 +65,7 @@ namespace FirstIteration.Services
                             bulkCopy.NotifyAfter = batchSize;
                             bulkCopy.SqlRowsCopied += (sender, e) =>
                             {
+                                progress.Report(e.RowsCopied);
                                 rowsCopied = e.RowsCopied;
                                 e.Abort = IsCanceled;
                             };
@@ -58,8 +85,10 @@ namespace FirstIteration.Services
 
                             while (!empty)
                             {
-                                //Parse file and calculate TransAmount
-                                //Add row to dataTable
+                                //Parse through csv fields and store them
+                                //Add range to the data table
+                                processFile(csvreader, dataTable);
+
                                 readCount++;
                                 empty = !csvreader.Read();
 
@@ -89,6 +118,7 @@ namespace FirstIteration.Services
                     }
                 }
             }
+            return rowsCopied;
         }
 
         private string GetConnectionString()
