@@ -338,6 +338,7 @@
     <Content Include="Scripts\respond.js" />
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\DropDownLists.js" />
+    <Content Include="Scripts\Upload.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">
@@ -381,6 +382,7 @@
     <Content Include="Views\Chart\_Stats.cshtml" />
     <Content Include="Views\Chart\_FundingSourceDropDowns.cshtml" />
     <Content Include="Views\Chart\_EmployeeDropDowns.cshtml" />
+    <Content Include="Views\Chart\UploadModal.cshtml" />
   </ItemGroup>
   <ItemGroup>
     <Service Include="{508349B6-6B84-4DF5-91F0-309BEEBAD82D}" />

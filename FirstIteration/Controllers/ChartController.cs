@@ -55,6 +55,13 @@ namespace FirstIteration.Controllers
             return View();
         }
 
+        [HttpGet]
+        public ActionResult UploadModal(string id)
+        {
+            ViewBag.UploadSelection = id;
+            return PartialView();
+        }
+
         public JsonResult StaffList(int Id)
         {
             var staffList = StaffService.GetStaffList(Id);
