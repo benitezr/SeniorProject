@@ -43,12 +43,10 @@ namespace FirstIteration.Services
 
         }
 
-        private long Process(Stream inputStream, string table, string[] columnHeaders, IProgress<long> progress, ProcessDelegate processFile)
+        private long Process(Stream inputStream, string tableName, string[] columnHeaders, IProgress<long> progress, ProcessDelegate processFile)
         {
             int readCount = 0;
             long rowsCopied = 0;
-            string tableName = table;            
-            string[] columnNames = columnHeaders;
 
             using (var csvreader = new CsvReader(new StreamReader(inputStream)))
             {
@@ -72,16 +70,15 @@ namespace FirstIteration.Services
 
                             List<DataColumn> dataColumns = new List<DataColumn>();
                             DataTable dataTable = new DataTable(tableName);
-                            bool empty;
 
-                            foreach (string column in columnNames)
+                            foreach (string column in columnHeaders)
                             {
                                 dataColumns.Add(new DataColumn(column));
                                 bulkCopy.ColumnMappings.Add(column, column);
                             }
 
                             dataTable.Columns.AddRange(dataColumns.ToArray());
-                            empty = !csvreader.Read();
+                            bool empty = !csvreader.Read();
 
                             while (!empty)
                             {
