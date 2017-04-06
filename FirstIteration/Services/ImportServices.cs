@@ -14,7 +14,7 @@ namespace FirstIteration.Services
 {
     public class ImportServices
     {
-        private const int batchSize = 500;
+        private const int batchSize = 500, notifyAfter = 10;
         public bool IsCanceled { get; set; }
         private delegate void ProcessDelegate(CsvReader cr, DataTable dt);
 
@@ -57,7 +57,7 @@ namespace FirstIteration.Services
                     using (var bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
                     {
                         bulkCopy.DestinationTableName = tableName;
-                        bulkCopy.NotifyAfter = batchSize;
+                        bulkCopy.NotifyAfter = notifyAfter;
                         bulkCopy.SqlRowsCopied += (sender, e) =>
                         {
                             progress.Report(e.RowsCopied);
