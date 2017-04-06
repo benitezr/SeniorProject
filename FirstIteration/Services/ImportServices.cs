@@ -48,38 +48,37 @@ namespace FirstIteration.Services
             int readCount = 0;
             long rowsCopied = 0;
 
-            using (var csvreader = new CsvReader(new StreamReader(inputStream)))
+            using (var context = new transcendenceEntities())
             {
-                string connStr = GetConnectionString();
-
-                using (var conn = new SqlConnection(connStr))
+                var conn = (SqlConnection)context.Database.Connection;
+                conn.Open();
+                using (var transaction = conn.BeginTransaction(IsolationLevel.Serializable))
                 {
-                    conn.Open();
-                    using (var transaction = conn.BeginTransaction(IsolationLevel.Serializable))
+                    using (var bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
                     {
-                        using (var bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
+                        bulkCopy.DestinationTableName = tableName;
+                        bulkCopy.NotifyAfter = batchSize;
+                        bulkCopy.SqlRowsCopied += (sender, e) =>
                         {
-                            bulkCopy.DestinationTableName = tableName;
-                            bulkCopy.NotifyAfter = batchSize;
-                            bulkCopy.SqlRowsCopied += (sender, e) =>
-                            {
-                                progress.Report(e.RowsCopied);
-                                rowsCopied = e.RowsCopied;
-                                e.Abort = IsCanceled;
-                            };
+                            progress.Report(e.RowsCopied);
+                            rowsCopied = e.RowsCopied;
+                            e.Abort = IsCanceled;
+                        };
 
-                            List<DataColumn> dataColumns = new List<DataColumn>();
-                            DataTable dataTable = new DataTable(tableName);
+                        List<DataColumn> dataColumns = new List<DataColumn>();
+                        DataTable dataTable = new DataTable(tableName);
 
-                            foreach (string column in columnHeaders)
-                            {
-                                dataColumns.Add(new DataColumn(column));
-                                bulkCopy.ColumnMappings.Add(column, column);
-                            }
+                        foreach (string column in columnHeaders)
+                        {
+                            dataColumns.Add(new DataColumn(column));
+                            bulkCopy.ColumnMappings.Add(column, column);
+                        }
 
-                            dataTable.Columns.AddRange(dataColumns.ToArray());
+                        dataTable.Columns.AddRange(dataColumns.ToArray());
+
+                        using (var csvreader = new CsvReader(new StreamReader(inputStream)))
+                        {
                             bool empty = !csvreader.Read();
-
                             while (!empty)
                             {
                                 //Parse through csv fields and store them
@@ -100,6 +99,7 @@ namespace FirstIteration.Services
                                         transaction.Rollback();
                                         bulkCopy.Close();
                                         dataTable.Rows.Clear();
+                                        conn.Close();
                                         throw;
                                     }
 
@@ -110,19 +110,13 @@ namespace FirstIteration.Services
                                     readCount = 0;
                                 }
                             }
-                        }
-                        transaction.Commit();
-                    }
-                }
-            }
+                        }//CsvReader closed                            
+                    }//SqlBulkCopy closed
+                    transaction.Commit();
+                    conn.Close();
+                }//Transaction closed
+            }//dbcontext closed                
             return rowsCopied;
-        }
-
-        private string GetConnectionString()
-        {
-            var context = new transcendenceEntities();
-            EntityConnection connection = (EntityConnection)context.Database.Connection;
-            return connection.StoreConnection.ConnectionString;
-        }
+        }//function closed
     }
 }
