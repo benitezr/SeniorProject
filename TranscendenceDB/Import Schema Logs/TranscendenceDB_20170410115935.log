@@ -1,0 +1,80 @@
+4/10/2017 7:59:35 PM	This log contains information about the import schema operation into project 'TranscendenceDB' on computer 'BRIAN-PC' by user 'Brian'.
+4/10/2017 7:59:35 PM	Import of database schema has started.
+4/10/2017 7:59:39 PM	Gathering logins
+4/10/2017 8:01:57 PM	Gathering database options
+4/10/2017 8:01:57 PM	Gathering users
+4/10/2017 8:01:57 PM	Gathering roles
+4/10/2017 8:01:57 PM	Gathering application roles
+4/10/2017 8:01:57 PM	Gathering role memberships
+4/10/2017 8:01:57 PM	Gathering filegroups
+4/10/2017 8:01:57 PM	Gathering full-text catalogs
+4/10/2017 8:01:57 PM	Gathering assemblies
+4/10/2017 8:01:57 PM	Gathering certificates
+4/10/2017 8:01:57 PM	Gathering symmetric keys
+4/10/2017 8:01:57 PM	Gathering encrypted symmetric keys
+4/10/2017 8:01:57 PM	Gathering schemas
+4/10/2017 8:01:57 PM	Gathering XML schema collections
+4/10/2017 8:01:57 PM	Gathering user-defined data types
+4/10/2017 8:01:57 PM	Gathering user-defined types
+4/10/2017 8:01:57 PM	Gathering table types
+4/10/2017 8:01:57 PM	Gathering unique keys for table types
+4/10/2017 8:01:57 PM	Gathering primary keys for table types
+4/10/2017 8:01:57 PM	Gathering indexes for table types
+4/10/2017 8:01:57 PM	Gathering check constraints for table types
+4/10/2017 8:01:57 PM	Gathering default constraints for table types
+4/10/2017 8:01:57 PM	Gathering partition functions
+4/10/2017 8:01:57 PM	Gathering partition schemes
+4/10/2017 8:01:57 PM	Gathering functions
+4/10/2017 8:01:58 PM	Gathering encrypted functions
+4/10/2017 8:01:58 PM	Gathering aggregates
+4/10/2017 8:01:58 PM	Gathering procedures
+4/10/2017 8:01:58 PM	Gathering encrypted procedures
+4/10/2017 8:01:58 PM	Gathering tables
+4/10/2017 8:01:58 PM	Gathering primary keys
+4/10/2017 8:01:58 PM	Gathering unique constraints
+4/10/2017 8:01:58 PM	Gathering foreign keys
+4/10/2017 8:01:58 PM	Gathering default constraints
+4/10/2017 8:01:58 PM	Gathering check constraints
+4/10/2017 8:01:58 PM	Gathering views
+4/10/2017 8:01:58 PM	Gathering encrypted views
+4/10/2017 8:01:58 PM	Gathering indexes
+4/10/2017 8:01:58 PM	Gathering statistics
+4/10/2017 8:01:58 PM	Gathering full-text index stoplists
+4/10/2017 8:01:58 PM	Gathering search property lists
+4/10/2017 8:01:58 PM	Gathering search properties
+4/10/2017 8:01:58 PM	Gathering full-text indexes
+4/10/2017 8:01:58 PM	Gathering column store indexes
+4/10/2017 8:01:58 PM	Gathering spatial indexes
+4/10/2017 8:01:58 PM	Gathering XML indexes
+4/10/2017 8:01:58 PM	Gathering Selective XML indexes
+4/10/2017 8:01:59 PM	Gathering encrypted triggers
+4/10/2017 8:01:59 PM	Gathering triggers
+4/10/2017 8:01:59 PM	Gathering encrypted and clr ddl triggers
+4/10/2017 8:01:59 PM	Gathering ddl triggers
+4/10/2017 8:01:59 PM	Gathering synonyms
+4/10/2017 8:01:59 PM	Gathering defaults
+4/10/2017 8:01:59 PM	Gathering data constraint uddt bindings
+4/10/2017 8:01:59 PM	Gathering rules
+4/10/2017 8:01:59 PM	Gathering data constraint uddt bindings
+4/10/2017 8:01:59 PM	Gathering message types
+4/10/2017 8:01:59 PM	Gathering queues
+4/10/2017 8:01:59 PM	Gathering contracts
+4/10/2017 8:01:59 PM	Gathering services
+4/10/2017 8:01:59 PM	Gathering event notifications
+4/10/2017 8:01:59 PM	Gathering remote service bindings
+4/10/2017 8:01:59 PM	Gathering broker priorities
+4/10/2017 8:01:59 PM	Gathering signatures
+4/10/2017 8:01:59 PM	Gathering data compression options
+4/10/2017 8:01:59 PM	Gathering sequence types
+4/10/2017 8:01:59 PM	Gathering security policies
+4/10/2017 8:01:59 PM	Gather column encryption keys
+4/10/2017 8:01:59 PM	Gathering column master keys
+4/10/2017 8:01:59 PM	Gathering external data sources
+4/10/2017 8:01:59 PM	Gathering external tables
+4/10/2017 8:01:59 PM	Gathering extended properties
+4/10/2017 8:02:00 PM	Gathering logins
+4/10/2017 8:02:01 PM	Scanning project for duplicate elements
+4/10/2017 8:02:01 PM	Finished duplicate element processing
+4/10/2017 8:02:01 PM	Finished importing database.
+4/10/2017 8:02:01 PM	A summary of the import was saved to the following location: C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\TranscendenceDB\Import Schema Logs\TranscendenceDB_20170410115935.log
+4/10/2017 8:02:01 PM	Click Finish to continue...

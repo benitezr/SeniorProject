@@ -1,0 +1,23 @@
+﻿** Highlights
+     Tables that will be rebuilt
+       None
+     Clustered indexes that will be dropped
+       None
+     Clustered indexes that will be created
+       None
+     Possible data issues
+       None
+
+** User actions
+     Create
+       [dbo].[Departments] (Table)
+       [dbo].[Funding_Sources] (Table)
+       [dbo].[Staff] (Table)
+       [dbo].[Transactions] (Table)
+       [dbo].[FK_DeptID] (Foreign Key)
+       [dbo].[FK_Dept] (Foreign Key)
+       [dbo].[FK_FundMasterID] (Foreign Key)
+       [dbo].[FK_Staff] (Foreign Key)
+       [dbo].[GetTransCategoriesForLine] (Procedure)
+
+** Supporting actions
