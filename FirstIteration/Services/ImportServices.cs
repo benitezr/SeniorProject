@@ -22,23 +22,32 @@ namespace FirstIteration.Services
         public long ProcessTransactions(Stream inputStream, IProgress<long> progress)
         {
             long rowsCopied;
-            Dictionary<string, string> columnMaps = new Dictionary<string, string> { {"UniqueID", "uniqueid_c"}, {"DeptID", "DeptName"}, {"StaffID", "staffcode_c"},
-                { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
-                {"TransAdjustment", "ajd"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
+            //Dictionary<string, string> columnMaps = new Dictionary<string, string> { {"UniqueID", "uniqueid_c"}, {"DeptID", "DeptName"}, {"StaffID", "staffcode_c"},
+            //    { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
+            //    {"TransAdjustment", "ajd"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
+
+            Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "uniqueid_c", new KeyValuePair<string, Type>("UniqueID", typeof(int)) },
+            { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) },
+            { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) },
+            { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }};
 
             if (departments == null) LoadDeptDictionary();
 
-            rowsCopied = Process(inputStream, "Transactions", columnMaps.Keys.ToArray(), progress, (csvreader, dataTable) =>
+            rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), progress, (csvreader, dataTable) =>
             {
                 //Parse through csv fields and store them
                 //Add range to the data table
+                var row = dataTable.NewRow();
 
-                //var row = dataTable.NewRow();
+                foreach (KeyValuePair<string, KeyValuePair<string, Type>> item in columnMaps)
+                {
+                    if (item.Value.Key == "DeptID")
+                        row[item.Value.Key] = departments[csvreader.GetField(item.Key)];
+                    else
+                        row[item.Value.Key] = Convert.ChangeType(csvreader.GetField(item.Key), item.Value.Value);
+                }
 
-                //foreach (KeyValuePair<string, string> map in columnMaps)
-                //{
-                //    row[map.Key] = csvreader.GetField(map.Key);
-                //}                
+                dataTable.Rows.Add(row);
             });
 
             return rowsCopied;
@@ -47,11 +56,12 @@ namespace FirstIteration.Services
         public long ProcessDepartments(Stream inputStream, IProgress<long> progress)
         {
             long rowsCopied;
-            Dictionary<string, string> columnMaps = new Dictionary<string, string> { { "DeptName", "DeptName" } };
+            Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>>
+            { {"DeptName", new KeyValuePair<string, Type>("DeptName", typeof(string)) } };
 
-            rowsCopied = Process(inputStream, "Departments", columnMaps.Keys.ToArray(), progress, (csvreader, dataTable) =>
+            rowsCopied = Process(inputStream, "Departments", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), progress, (csvreader, dataTable) =>
             {
-                var deptName = csvreader.GetField<string>("DeptName");
+                var deptName = csvreader.GetField("DeptName");
                 var row = dataTable.NewRow();
                 row["DeptName"] = deptName;
 
@@ -74,7 +84,7 @@ namespace FirstIteration.Services
             }
         }
 
-        private long Process(Stream inputStream, string tableName, string[] columnHeaders, IProgress<long> progress, ProcessDelegate processFile)
+        private long Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, IProgress<long> progress, ProcessDelegate processFile)
         {
             int readCount = 0;
             long rowsCopied = 0;
@@ -99,10 +109,10 @@ namespace FirstIteration.Services
                         List<DataColumn> dataColumns = new List<DataColumn>();
                         DataTable dataTable = new DataTable(tableName);
 
-                        foreach (string column in columnHeaders)
+                        foreach (KeyValuePair<string, Type> item in columnMaps)
                         {
-                            dataColumns.Add(new DataColumn(column));
-                            bulkCopy.ColumnMappings.Add(column, column);
+                            dataColumns.Add(new DataColumn(item.Key, item.Value));
+                            bulkCopy.ColumnMappings.Add(item.Key, item.Key);
                         }
 
                         dataTable.Columns.AddRange(dataColumns.ToArray());
