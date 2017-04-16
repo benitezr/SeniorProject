@@ -17,30 +17,55 @@ namespace FirstIteration.Services
         private const int batchSize = 500, notifyAfter = 10;
         public bool IsCanceled { get; set; }
         private delegate void ProcessDelegate(CsvReader cr, DataTable dt);
+        private Dictionary<string, int> departments;
 
         public long ProcessTransactions(Stream inputStream, IProgress<long> progress)
         {
             long rowsCopied;
-            string[] columnNames = new string[] { "UniqueID", "DeptID", "StaffID", "FundMasterID", "TransType", "TransDate",
-            "TransTransfer", "TransAdjustment", "TransCredit", "TransCharge" };
+            Dictionary<string, string> columnMaps = new Dictionary<string, string> { {"UniqueID", "uniqueid_c"}, {"DeptID", "DeptName"}, {"StaffID", "staffcode_c"},
+                { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
+                {"TransAdjustment", "ajd"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
 
-            rowsCopied = Process(inputStream, "Transactions", columnNames, progress, (csvreader, dataTable) =>
+            if (departments == null) LoadDeptDictionary();
+
+            rowsCopied = Process(inputStream, "Transactions", columnMaps.Keys.ToArray(), progress, (csvreader, dataTable) =>
             {
                 //Parse through csv fields and store them
                 //Add range to the data table
+                
             });
 
             return rowsCopied;
         }
 
-        public void ProcessDepartments(Stream inputStream, IProgress<long> progress)
+        public long ProcessDepartments(Stream inputStream, IProgress<long> progress)
         {
+            long rowsCopied;
+            Dictionary<string, string> columnMaps = new Dictionary<string, string> { { "DeptName", "DeptName" } };
 
+            rowsCopied = Process(inputStream, "Departments", columnMaps.Keys.ToArray(), progress, (csvreader, dataTable) =>
+            {
+                var deptName = csvreader.GetField<string>("DeptName");
+                var row = dataTable.NewRow();
+                row["DeptName"] = deptName;
+
+                dataTable.Rows.Add(row);
+            });
+
+            return rowsCopied;
         }
 
-        public void ProcessEmployess(Stream inputStream, IProgress<long> progress)
+        public void ProcessStaff(Stream inputStream, IProgress<long> progress)
         {
+            
+        }
 
+        private void LoadDeptDictionary()
+        {
+            using (var context = new transcendenceEntities())
+            {
+                departments = context.Departments.ToDictionary(d => d.DeptName, d => d.DeptID);
+            }
         }
 
         private long Process(Stream inputStream, string tableName, string[] columnHeaders, IProgress<long> progress, ProcessDelegate processFile)
