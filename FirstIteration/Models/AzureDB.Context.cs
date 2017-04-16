@@ -29,6 +29,5 @@ namespace FirstIteration.Models
         public virtual DbSet<Funding_Sources> Funding_Sources { get; set; }
         public virtual DbSet<Staff> Staffs { get; set; }
         public virtual DbSet<Transaction> Transactions { get; set; }
-        public virtual DbSet<database_firewall_rules> database_firewall_rules { get; set; }
     }
 }

@@ -5,7 +5,7 @@
       <PropertyRef Name="DeptID" />
     </Key>
     <Property Name="DeptID" Type="Int32" Nullable="false" />
-    <Property Name="DeptName" Type="String" MaxLength="50" FixedLength="true" Unicode="false" Nullable="false" />
+    <Property Name="DeptName" Type="String" MaxLength="50" FixedLength="false" Unicode="false" Nullable="false" />
     <NavigationProperty Name="Transactions" Relationship="Self.FK_Dept" FromRole="Departments" ToRole="Transactions" />
     <NavigationProperty Name="Staffs" Relationship="Self.FK_DeptID" FromRole="Departments" ToRole="Staff" />
   </EntityType>
@@ -46,22 +46,6 @@
     <Property Name="UniqueID" Type="Int32" Nullable="false" />
     <Property Name="StaffID" Type="Int32" Nullable="false" />
     <NavigationProperty Name="Staff" Relationship="transcendenceModel.FK_Staff" FromRole="Transaction" ToRole="Staff" />
-  </EntityType>
-  <EntityType Name="database_firewall_rules">
-    <Key>
-      <PropertyRef Name="id" />
-      <PropertyRef Name="name" />
-      <PropertyRef Name="start_ip_address" />
-      <PropertyRef Name="end_ip_address" />
-      <PropertyRef Name="create_date" />
-      <PropertyRef Name="modify_date" />
-    </Key>
-    <Property Name="id" Type="Int32" Nullable="false" annotation:StoreGeneratedPattern="Identity" />
-    <Property Name="name" Type="String" MaxLength="128" FixedLength="false" Unicode="true" Nullable="false" />
-    <Property Name="start_ip_address" Type="String" MaxLength="45" FixedLength="false" Unicode="false" Nullable="false" />
-    <Property Name="end_ip_address" Type="String" MaxLength="45" FixedLength="false" Unicode="false" Nullable="false" />
-    <Property Name="create_date" Type="DateTime" Nullable="false" Precision="3" />
-    <Property Name="modify_date" Type="DateTime" Nullable="false" Precision="3" />
   </EntityType>
   <Association Name="FK_Dept">
     <End Role="Departments" Type="Self.Department" Multiplicity="1">
@@ -110,7 +94,6 @@
     <EntitySet Name="Funding_Sources" EntityType="Self.Funding_Sources" />
     <EntitySet Name="Staffs" EntityType="Self.Staff" />
     <EntitySet Name="Transactions" EntityType="Self.Transaction" />
-    <EntitySet Name="database_firewall_rules" EntityType="Self.database_firewall_rules" />
     <AssociationSet Name="FK_Dept" Association="Self.FK_Dept">
       <End Role="Departments" EntitySet="Departments" />
       <End Role="Transactions" EntitySet="Transactions" />
