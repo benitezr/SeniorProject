@@ -24,12 +24,12 @@ namespace FirstIteration.Services
             long rowsCopied;
             //Dictionary<string, string> columnMaps = new Dictionary<string, string> { {"UniqueID", "uniqueid_c"}, {"DeptID", "DeptName"}, {"StaffID", "staffcode_c"},
             //    { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
-            //    {"TransAdjustment", "ajd"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
+            //    {"TransAdjustment", "adj"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
 
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "uniqueid_c", new KeyValuePair<string, Type>("UniqueID", typeof(int)) },
-            { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) },
-            { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) },
-            { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }, { "", new KeyValuePair<string, Type>("", typeof(int)) }};
+            { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) }, { "psplanmasterid_c", new KeyValuePair<string, Type>("FundMasterID", typeof(int)) },
+            { "transactioncode_c", new KeyValuePair<string, Type>("TransType", typeof(string)) }, { "transactiondate_d", new KeyValuePair<string, Type>("TransDate", typeof(DateTime)) }, { "transfer", new KeyValuePair<string, Type>("TransTransfer", typeof(decimal)) },
+            { "adj", new KeyValuePair<string, Type>("TransAdjustment", typeof(decimal)) }, { "credit", new KeyValuePair<string, Type>("TransCredit", typeof(decimal)) }, { "charge", new KeyValuePair<string, Type>("TransCharge", typeof(decimal)) }};
 
             if (departments == null) LoadDeptDictionary();
 
@@ -44,7 +44,7 @@ namespace FirstIteration.Services
                     if (item.Value.Key == "DeptID")
                         row[item.Value.Key] = departments[csvreader.GetField(item.Key)];
                     else
-                        row[item.Value.Key] = Convert.ChangeType(csvreader.GetField(item.Key), item.Value.Value);
+                        row[item.Value.Key] = Cast(csvreader.GetField(item.Key), item.Value.Value);
                 }
 
                 dataTable.Rows.Add(row);
@@ -82,6 +82,11 @@ namespace FirstIteration.Services
             {
                 departments = context.Departments.ToDictionary(d => d.DeptName, d => d.DeptID);
             }
+        }
+
+        private dynamic Cast(string str, Type castType)
+        {
+            return Convert.ChangeType(str, castType);
         }
 
         private long Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, IProgress<long> progress, ProcessDelegate processFile)
