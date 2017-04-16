@@ -32,7 +32,13 @@ namespace FirstIteration.Services
             {
                 //Parse through csv fields and store them
                 //Add range to the data table
-                
+
+                //var row = dataTable.NewRow();
+
+                //foreach (KeyValuePair<string, string> map in columnMaps)
+                //{
+                //    row[map.Key] = csvreader.GetField(map.Key);
+                //}                
             });
 
             return rowsCopied;
