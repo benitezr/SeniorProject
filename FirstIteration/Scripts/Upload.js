@@ -5,16 +5,14 @@
         if (!modalID || modalID !== id) {
             $.ajax({
                 url: "/Chart/UploadModal/" + id,
-                success: function (data) {
-                    $("#modal-wrapper").html(data);
+                success: function (response) {
+                    $("#modal-wrapper").html(response);
                     modalID = id;
                 },
                 complete: function () {
-                    $("#submit").on("click", function () {
-                        alert("submit button clicked");
-                    });
+                    $("#submit").on("click", fileSubmit);
 
-                    $(":file").filestyle({
+                    $("#file").filestyle({
                         buttonText: "Find CSV",
                         icon: false,
                         placeholder: "No file chosen",
@@ -30,6 +28,43 @@
     });
 
     function fileSubmit() {
+        var formData = new FormData();
+        var files = $("#file").get(0).files;
 
-    }
+        if (files.length > 0) {
+            formData.append("CsvUpload", files[0]);
+        } else {
+            $("#help-block").html("<font color='red'>No files found!</font>");
+            $("#file").filestyle("clear");
+            return;
+        }
+
+        var extension = $("#file").val().split(".").pop().toUpperCase();
+        if (extension != "CSV") {
+            $("#help-block").html("<font color='red'>Incorrect file type uploaded!</font>");
+            $("#file").filestyle("clear")
+            return;
+        }
+
+        $.ajax({
+            url: "/Chart/UploadCsv",
+            contentType: false,
+            processData: false,
+            data: formData,
+            type: "POST",
+            success: function (response) {
+                window.clearInterval(getProgress);
+                $("#help-block").html("<font color='green'>Upload successful: " + response + " rows inserted</font>");
+            }
+        });
+
+        var getProgress = window.setInterval(function () {
+            $.ajax({
+                url: "/Chart/ProgressUpdate",
+                success: function (response) {
+                    $("#help-block").html(response + " rows inserted...");
+                }
+            });
+        }, 5000);
+    }    
 });

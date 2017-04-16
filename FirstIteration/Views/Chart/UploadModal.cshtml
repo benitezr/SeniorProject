@@ -3,12 +3,12 @@
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal">&times;</button>
-                <h4 class="modal-title">Upload @ViewBag.UploadSelection</h4>
+                <h4 class="modal-title">Upload @Session["UploadType"].ToString()</h4>
             </div>
             <div class="modal-body">
                 <form action="" method="post" enctype="multipart/form-data">
-                    <input type="file" name="csvfile" />
-                    <p id="upload-helpblock" class="help-block">Choose CSV file to upload</p>
+                    <input id="file" type="file" name="csvfile" />
+                    <p id="help-block" class="help-block">Choose CSV file to upload</p>
                     <button id="submit" type="button" class="btn btn-primary">Upload</button>
                 </form>
             </div>

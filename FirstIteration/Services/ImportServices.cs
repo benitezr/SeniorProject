@@ -19,13 +19,14 @@ namespace FirstIteration.Services
         private delegate void ProcessDelegate(CsvReader cr, DataTable dt);
         private Dictionary<string, int> departments;
 
-        public long ProcessTransactions(Stream inputStream, IProgress<long> progress)
+        public long ProcessTransactions(Stream inputStream, IProgress<string> progress)
         {
             long rowsCopied;
             //Dictionary<string, string> columnMaps = new Dictionary<string, string> { {"UniqueID", "uniqueid_c"}, {"DeptID", "DeptName"}, {"StaffID", "staffcode_c"},
             //    { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
             //    {"TransAdjustment", "adj"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
 
+            //Map csv columns to sql table columns and data types
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "uniqueid_c", new KeyValuePair<string, Type>("UniqueID", typeof(int)) },
             { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) }, { "psplanmasterid_c", new KeyValuePair<string, Type>("FundMasterID", typeof(int)) },
             { "transactioncode_c", new KeyValuePair<string, Type>("TransType", typeof(string)) }, { "transactiondate_d", new KeyValuePair<string, Type>("TransDate", typeof(DateTime)) }, { "transfer", new KeyValuePair<string, Type>("TransTransfer", typeof(decimal)) },
@@ -35,8 +36,6 @@ namespace FirstIteration.Services
 
             rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), progress, (csvreader, dataTable) =>
             {
-                //Parse through csv fields and store them
-                //Add range to the data table
                 var row = dataTable.NewRow();
 
                 foreach (KeyValuePair<string, KeyValuePair<string, Type>> item in columnMaps)
@@ -53,7 +52,7 @@ namespace FirstIteration.Services
             return rowsCopied;
         }
 
-        public long ProcessDepartments(Stream inputStream, IProgress<long> progress)
+        public long ProcessDepartments(Stream inputStream, IProgress<string> progress)
         {
             long rowsCopied;
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>>
@@ -61,9 +60,8 @@ namespace FirstIteration.Services
 
             rowsCopied = Process(inputStream, "Departments", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), progress, (csvreader, dataTable) =>
             {
-                var deptName = csvreader.GetField("DeptName");
                 var row = dataTable.NewRow();
-                row["DeptName"] = deptName;
+                row["DeptName"] = csvreader.GetField("DeptName");
 
                 dataTable.Rows.Add(row);
             });
@@ -71,7 +69,7 @@ namespace FirstIteration.Services
             return rowsCopied;
         }
 
-        public void ProcessStaff(Stream inputStream, IProgress<long> progress)
+        public void ProcessStaff(Stream inputStream, IProgress<string> progress)
         {
             
         }
@@ -84,12 +82,12 @@ namespace FirstIteration.Services
             }
         }
 
-        private dynamic Cast(string str, Type castType)
+        private dynamic Cast(string str, Type type)
         {
-            return Convert.ChangeType(str, castType);
+            return Convert.ChangeType(str, type);
         }
 
-        private long Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, IProgress<long> progress, ProcessDelegate processFile)
+        private long Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, IProgress<string> progress, ProcessDelegate processFile)
         {
             int readCount = 0;
             long rowsCopied = 0;
@@ -106,7 +104,7 @@ namespace FirstIteration.Services
                         bulkCopy.NotifyAfter = notifyAfter;
                         bulkCopy.SqlRowsCopied += (sender, e) =>
                         {
-                            progress.Report(e.RowsCopied);
+                            progress.Report(e.RowsCopied.ToString());
                             rowsCopied = e.RowsCopied;
                             e.Abort = IsCanceled;
                         };
@@ -126,34 +124,34 @@ namespace FirstIteration.Services
                         {
                             bool empty = !csvreader.Read();
                             while (!empty)
-                            {
-                                //Parse through csv fields and store them
-                                //Add range to the data table
-                                processFile(csvreader, dataTable);
-
-                                readCount++;
-                                empty = !csvreader.Read();
-
-                                if (readCount == batchSize || empty)
+                            {                                
+                                try
                                 {
-                                    try
+                                    //Parse through csv fields and store them
+                                    //Add range to the data table
+                                    processFile(csvreader, dataTable);
+
+                                    readCount++;
+                                    empty = !csvreader.Read();
+
+                                    if (readCount == batchSize || empty)
                                     {
-                                        bulkCopy.WriteToServer(dataTable);
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        transaction.Rollback();
-                                        bulkCopy.Close();
+                                        bulkCopy.WriteToServer(dataTable);                                        
+
+                                        if (empty && dataTable.Rows.Count > 0)
+                                            rowsCopied += dataTable.Rows.Count;
+
                                         dataTable.Rows.Clear();
-                                        conn.Close();
-                                        throw;
+                                        readCount = 0;
                                     }
-
-                                    if (empty && dataTable.Rows.Count > 0)
-                                        rowsCopied += dataTable.Rows.Count;
-
+                                }
+                                catch (Exception ex)
+                                {
+                                    transaction.Rollback();
+                                    bulkCopy.Close();
                                     dataTable.Rows.Clear();
-                                    readCount = 0;
+                                    conn.Close();
+                                    throw;
                                 }
                             }
                         }//CsvReader closed                            

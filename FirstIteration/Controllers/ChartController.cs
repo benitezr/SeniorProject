@@ -9,7 +9,7 @@ using DotNet.Highcharts.Helpers;
 using System.Collections;
 using System.Data;
 using FirstIteration.Services;
-
+using System.IO;
 
 namespace FirstIteration.Controllers
 {
@@ -21,6 +21,7 @@ namespace FirstIteration.Controllers
         private static DepartmentServices DeptService = new DepartmentServices();
         private static BarChartServices BarService = new BarChartServices();
         private static PieChartServices PieService = new PieChartServices();
+        private readonly ImportServices ImportService = new ImportServices();
 
         public ActionResult Dashboard()
         {
@@ -58,8 +59,39 @@ namespace FirstIteration.Controllers
         [HttpGet]
         public ActionResult UploadModal(string id)
         {
-            ViewBag.UploadSelection = id;
+            Session["UploadType"] = id;
             return PartialView();
+        }
+
+        [HttpPost]
+        public ActionResult UploadCsv()
+        {
+            var file = System.Web.HttpContext.Current.Request.Files["CsvUpload"];
+            if (file.ContentLength > 0 && Path.GetExtension(file.FileName).ToUpper().Contains("CSV"))
+            {
+                string tableUpload = Session["UploadType"].ToString();
+                var progress = new Progress<string>(rowsInserted => Session["Progress"] = rowsInserted);
+
+                switch (tableUpload)
+                {
+                    case "Transactions":
+                        ImportService.ProcessTransactions(file.InputStream, progress);
+                        break;
+                    case "Departments":
+                        ImportService.ProcessDepartments(file.InputStream, progress);
+                        break;
+                    case "Staff":
+                        ImportService.ProcessStaff(file.InputStream, progress);
+                        break;
+                }
+            }
+            return Content(Session["Progress"].ToString());
+        }
+
+        public ActionResult ProgressUpdate()
+        {
+            string progress = Session["Progress"].ToString();
+            return Content(progress);
         }
 
         public JsonResult StaffList(int Id)
