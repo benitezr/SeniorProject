@@ -26,6 +26,12 @@ namespace FirstIteration.Services
             //    { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
             //    {"TransAdjustment", "adj"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
 
+            //var properties = typeof(Transaction).GetProperties().Where(p => !p.GetGetMethod().IsVirtual && p.Name != "TransAmount");
+            //foreach (var property in properties)
+            //{
+            //    do something with property.Name and property.PropertyType
+            //}
+
             //Map csv columns to sql table columns and data types
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "uniqueid_c", new KeyValuePair<string, Type>("UniqueID", typeof(int)) },
             { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) }, { "psplanmasterid_c", new KeyValuePair<string, Type>("FundMasterID", typeof(int)) },

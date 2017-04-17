@@ -29,7 +29,7 @@ namespace FirstIteration.Controllers
 
         public ActionResult Dashboard()
         {
-            ViewBag.Department = DeptService.GetAllDepartments();
+            ViewBag.Department = DeptService.GetAllDepartments();            
             return View();
         }
 
@@ -76,8 +76,7 @@ namespace FirstIteration.Controllers
                     return new HttpStatusCodeResult(500, "Data file cannot be processed at this time. Please try again.");
                 else
                     progressReport = "";
-            }            
-
+            }
             var file = System.Web.HttpContext.Current.Request.Files["CsvUpload"];
             if (file.ContentLength > 0 && Path.GetExtension(file.FileName).ToUpper().Contains("CSV"))
             {
@@ -87,7 +86,6 @@ namespace FirstIteration.Controllers
                     lock (padlock)                    
                         progressReport = rowsInserted;                                                          
                 });
-
                 switch (tableUpload)
                 {
                     //case "Transactions":
@@ -101,13 +99,11 @@ namespace FirstIteration.Controllers
                     //    ImportService.ProcessStaff(file.InputStream, progress);
                     //    break;
                 }
-
                 lock (padlock)
                 {
                     report = progressReport;
                     progressReport = null;
-                }  
-                                 
+                }                                 
                 return Content(report);
             }
             return new HttpStatusCodeResult(400, "File not found or incorrect file format.");
