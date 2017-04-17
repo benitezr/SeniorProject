@@ -10,9 +10,11 @@ using System.Collections;
 using System.Data;
 using FirstIteration.Services;
 using System.IO;
+using System.Threading.Tasks;
 
 namespace FirstIteration.Controllers
 {
+    [SessionState(System.Web.SessionState.SessionStateBehavior.ReadOnly)]
     public class ChartController : Controller
     {
         private static LineChartServices LineService = new LineChartServices();
@@ -22,6 +24,8 @@ namespace FirstIteration.Controllers
         private static BarChartServices BarService = new BarChartServices();
         private static PieChartServices PieService = new PieChartServices();
         private readonly ImportServices ImportService = new ImportServices();
+        private static string progressReport;
+        private static readonly object padlock = new object();
 
         public ActionResult Dashboard()
         {
@@ -59,39 +63,59 @@ namespace FirstIteration.Controllers
         [HttpGet]
         public ActionResult UploadModal(string id)
         {
-            Session["UploadType"] = id;
+            ViewBag.UploadType = id;
             return PartialView();
         }
 
         [HttpPost]
         public ActionResult UploadCsv()
         {
+            lock (padlock)
+            {
+                if (progressReport != null)
+                    return new HttpStatusCodeResult(500, "Data file cannot be processed at this time. Please try again.");
+                else
+                    progressReport = "";
+            }            
+
             var file = System.Web.HttpContext.Current.Request.Files["CsvUpload"];
             if (file.ContentLength > 0 && Path.GetExtension(file.FileName).ToUpper().Contains("CSV"))
             {
-                string tableUpload = Session["UploadType"].ToString();
-                var progress = new Progress<string>(rowsInserted => Session["Progress"] = rowsInserted);
+                string report, tableUpload = System.Web.HttpContext.Current.Request.Form["UploadType"];
+                var progress = new Progress<string>(rowsInserted => 
+                {
+                    lock (padlock)                    
+                        progressReport = rowsInserted;                                                          
+                });
 
                 switch (tableUpload)
                 {
-                    case "Transactions":
-                        ImportService.ProcessTransactions(file.InputStream, progress);
-                        break;
+                    //case "Transactions":
+                    //    ImportService.ProcessTransactions(file.InputStream, progress);
+                    //    break;
                     case "Departments":
-                        ImportService.ProcessDepartments(file.InputStream, progress);
+                        lock (padlock)                        
+                            progressReport = ImportService.ProcessDepartments(file.InputStream, progress);                                                                   
                         break;
-                    case "Staff":
-                        ImportService.ProcessStaff(file.InputStream, progress);
-                        break;
+                    //case "Staff":
+                    //    ImportService.ProcessStaff(file.InputStream, progress);
+                    //    break;
                 }
+
+                lock (padlock)
+                {
+                    report = progressReport;
+                    progressReport = null;
+                }  
+                                 
+                return Content(report);
             }
-            return Content(Session["Progress"].ToString());
+            return new HttpStatusCodeResult(400, "File not found or incorrect file format.");
         }
 
         public ActionResult ProgressUpdate()
         {
-            string progress = Session["Progress"].ToString();
-            return Content(progress);
+            return Content(progressReport);
         }
 
         public JsonResult StaffList(int Id)

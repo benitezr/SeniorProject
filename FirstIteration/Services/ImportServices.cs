@@ -52,7 +52,7 @@ namespace FirstIteration.Services
             return rowsCopied;
         }
 
-        public long ProcessDepartments(Stream inputStream, IProgress<string> progress)
+        public string ProcessDepartments(Stream inputStream, IProgress<string> progress)
         {
             long rowsCopied;
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>>
@@ -66,7 +66,7 @@ namespace FirstIteration.Services
                 dataTable.Rows.Add(row);
             });
 
-            return rowsCopied;
+            return rowsCopied.ToString();
         }
 
         public void ProcessStaff(Stream inputStream, IProgress<string> progress)
@@ -89,7 +89,7 @@ namespace FirstIteration.Services
 
         private long Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, IProgress<string> progress, ProcessDelegate processFile)
         {
-            int readCount = 0;
+            int readCount = 0, notifyCount = 0;
             long rowsCopied = 0;
 
             using (var context = new transcendenceEntities())
@@ -106,6 +106,7 @@ namespace FirstIteration.Services
                         {
                             progress.Report(e.RowsCopied.ToString());
                             rowsCopied = e.RowsCopied;
+                            notifyCount++;
                             e.Abort = IsCanceled;
                         };
 
@@ -139,7 +140,7 @@ namespace FirstIteration.Services
                                         bulkCopy.WriteToServer(dataTable);                                        
 
                                         if (empty && dataTable.Rows.Count > 0)
-                                            rowsCopied += dataTable.Rows.Count;
+                                            rowsCopied += dataTable.Rows.Count - notifyAfter * notifyCount;
 
                                         dataTable.Rows.Clear();
                                         readCount = 0;

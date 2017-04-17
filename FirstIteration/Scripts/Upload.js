@@ -33,6 +33,7 @@
 
         if (files.length > 0) {
             formData.append("CsvUpload", files[0]);
+            formData.append("UploadType", modalID);
         } else {
             $("#help-block").html("<font color='red'>No files found!</font>");
             $("#file").filestyle("clear");
@@ -46,6 +47,8 @@
             return;
         }
 
+        $("#help-block").html("Please wait...");
+
         $.ajax({
             url: "/Chart/UploadCsv",
             contentType: false,
@@ -55,16 +58,22 @@
             success: function (response) {
                 window.clearInterval(getProgress);
                 $("#help-block").html("<font color='green'>Upload successful: " + response + " rows inserted</font>");
+            },
+            error: function(xhr, status, message){
+                $("#help-block").html("<font color='red'>Error " + xhr.status + ": " + message + "</font>");
+                window.clearInterval(getProgress);
             }
         });
 
         var getProgress = window.setInterval(function () {
             $.ajax({
                 url: "/Chart/ProgressUpdate",
+                cache: false,
                 success: function (response) {
-                    $("#help-block").html(response + " rows inserted...");
+                    if(!$("#help-block").html().includes("Error"))
+                        $("#help-block").html(response + " rows inserted...");
                 }
             });
-        }, 5000);
-    }    
+        }, 2000);
+    }
 });
