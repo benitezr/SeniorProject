@@ -14,40 +14,32 @@ namespace FirstIteration.Services
 {
     public class ImportServices
     {
-        private const int batchSize = 500, notifyAfter = 10;
         public bool IsCanceled { get; set; }
         private delegate void ProcessDelegate(CsvReader cr, DataTable dt);
-        private Dictionary<string, int> departments;
+        private Dictionary<string, int> _departments;
 
-        public long ProcessTransactions(Stream inputStream, IProgress<string> progress)
+        public string ProcessTransactions(Stream inputStream)
         {
-            long rowsCopied;
-            //Dictionary<string, string> columnMaps = new Dictionary<string, string> { {"UniqueID", "uniqueid_c"}, {"DeptID", "DeptName"}, {"StaffID", "staffcode_c"},
-            //    { "FundMasterID", "psplanmasterid_c"}, {"TransType", "transactioncode_c"}, {"TransDate", "transactiondate_d"}, {"TransTransfer", "transfer"},
-            //    {"TransAdjustment", "adj"}, {"TransCredit", "credit"}, {"TransCharge", "charge"} };
+            string rowsCopied;
+            //Mapping columns programmatically
+            //Dictionary<string, Type> columns = PropertiesToDictionary(typeof(Transaction), p => !p.GetGetMethod().IsVirtual && p.Name != "TransAmount");
 
-            //var properties = typeof(Transaction).GetProperties().Where(p => !p.GetGetMethod().IsVirtual && p.Name != "TransAmount");
-            //foreach (var property in properties)
-            //{
-            //    do something with property.Name and property.PropertyType
-            //}
-
-            //Map csv columns to sql table columns and data types
+            //Map csv columns to sql table columns and data types (done manually for now)
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "uniqueid_c", new KeyValuePair<string, Type>("UniqueID", typeof(int)) },
             { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) }, { "psplanmasterid_c", new KeyValuePair<string, Type>("FundMasterID", typeof(int)) },
             { "transactioncode_c", new KeyValuePair<string, Type>("TransType", typeof(string)) }, { "transactiondate_d", new KeyValuePair<string, Type>("TransDate", typeof(DateTime)) }, { "transfer", new KeyValuePair<string, Type>("TransTransfer", typeof(decimal)) },
             { "adj", new KeyValuePair<string, Type>("TransAdjustment", typeof(decimal)) }, { "credit", new KeyValuePair<string, Type>("TransCredit", typeof(decimal)) }, { "charge", new KeyValuePair<string, Type>("TransCharge", typeof(decimal)) }};
 
-            if (departments == null) LoadDeptDictionary();
+            LoadDeptDictionary();
 
-            rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), progress, (csvreader, dataTable) =>
+            rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) =>
             {
                 var row = dataTable.NewRow();
 
                 foreach (KeyValuePair<string, KeyValuePair<string, Type>> item in columnMaps)
                 {
                     if (item.Value.Key == "DeptID")
-                        row[item.Value.Key] = departments[csvreader.GetField(item.Key)];
+                        row[item.Value.Key] = _departments[csvreader.GetField(item.Key)];
                     else
                         row[item.Value.Key] = Cast(csvreader.GetField(item.Key), item.Value.Value);
                 }
@@ -58,13 +50,13 @@ namespace FirstIteration.Services
             return rowsCopied;
         }
 
-        public string ProcessDepartments(Stream inputStream, IProgress<string> progress)
+        public string ProcessDepartments(Stream inputStream)
         {
-            long rowsCopied;
+            string rowsCopied;
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>>
             { {"DeptName", new KeyValuePair<string, Type>("DeptName", typeof(string)) } };
 
-            rowsCopied = Process(inputStream, "Departments", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), progress, (csvreader, dataTable) =>
+            rowsCopied = Process(inputStream, "Departments", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) =>
             {
                 var row = dataTable.NewRow();
                 row["DeptName"] = csvreader.GetField("DeptName");
@@ -72,20 +64,30 @@ namespace FirstIteration.Services
                 dataTable.Rows.Add(row);
             });
 
-            return rowsCopied.ToString();
+            return rowsCopied;
         }
 
-        public void ProcessStaff(Stream inputStream, IProgress<string> progress)
+        public string ProcessStaff(Stream inputStream)
         {
-            
+            string rowsCopied;
+            LoadDeptDictionary();
+
+
+
+            return rowsCopied;
         }
 
         private void LoadDeptDictionary()
         {
             using (var context = new transcendenceEntities())
             {
-                departments = context.Departments.ToDictionary(d => d.DeptName, d => d.DeptID);
+                _departments = context.Departments.ToDictionary(d => d.DeptName, d => d.DeptID);
             }
+        }
+
+        private Dictionary<string, Type> PropertiesToDictionary(Type type, Func<System.Reflection.PropertyInfo, bool> predicate)
+        {
+            return type.GetProperties().Where(predicate).ToDictionary(p => p.Name, p => p.PropertyType);
         }
 
         private dynamic Cast(string str, Type type)
@@ -93,9 +95,9 @@ namespace FirstIteration.Services
             return Convert.ChangeType(str, type);
         }
 
-        private long Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, IProgress<string> progress, ProcessDelegate processFile)
+        private string Process(Stream inputStream, string tableName, Dictionary<string, Type> columnMaps, ProcessDelegate processFile)
         {
-            int readCount = 0, notifyCount = 0;
+            int readCount = 0, notifyCount = 0, notifyAfter = 10, batchSize = 500;
             long rowsCopied = 0;
 
             using (var context = new transcendenceEntities())
@@ -110,7 +112,6 @@ namespace FirstIteration.Services
                         bulkCopy.NotifyAfter = notifyAfter;
                         bulkCopy.SqlRowsCopied += (sender, e) =>
                         {
-                            progress.Report(e.RowsCopied.ToString());
                             rowsCopied = e.RowsCopied;
                             notifyCount++;
                             e.Abort = IsCanceled;
@@ -167,7 +168,7 @@ namespace FirstIteration.Services
                     conn.Close();
                 }//Transaction closed
             }//dbcontext closed                
-            return rowsCopied;
+            return rowsCopied.ToString();
         }//function closed
     }
 }

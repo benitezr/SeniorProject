@@ -47,6 +47,7 @@
             return;
         }
 
+        $("#submit").prop("disabled", true);
         $("#help-block").html("Please wait...");
 
         $.ajax({
@@ -56,24 +57,12 @@
             data: formData,
             type: "POST",
             success: function (response) {
-                window.clearInterval(getProgress);
                 $("#help-block").html("<font color='green'>Upload successful: " + response + " rows inserted</font>");
+                $("#submit").prop("disabled", false);
             },
             error: function(xhr, status, message){
                 $("#help-block").html("<font color='red'>Error " + xhr.status + ": " + message + "</font>");
-                window.clearInterval(getProgress);
             }
         });
-
-        var getProgress = window.setInterval(function () {
-            $.ajax({
-                url: "/Chart/ProgressUpdate",
-                cache: false,
-                success: function (response) {
-                    if(!$("#help-block").html().includes("Error"))
-                        $("#help-block").html(response + " rows inserted...");
-                }
-            });
-        }, 2000);
     }
 });
