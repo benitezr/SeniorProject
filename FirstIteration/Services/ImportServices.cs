@@ -9,6 +9,7 @@ using System.IO;
 using System.Data.SqlClient;
 using System.Data;
 using System.Threading.Tasks;
+using System.Web.Mvc;
 
 namespace FirstIteration.Services
 {
@@ -26,7 +27,45 @@ namespace FirstIteration.Services
             }
         }
 
-        public string ProcessTransactions(Stream inputStream)
+        public ActionResult Import(HttpPostedFile file, string targetTable)
+        {
+            if (file.ContentLength > 0 && Path.GetExtension(file.FileName).ToUpper().Contains("CSV"))
+            {
+                string report = "";
+                try
+                {
+                    switch (targetTable)
+                    {
+                        case "Transactions":
+                            report = ProcessTransactions(file.InputStream);
+                            break;
+                        case "Departments":
+                            report = ProcessDepartments(file.InputStream);
+                            break;
+                        case "Staff":
+                            report = ProcessStaff(file.InputStream);
+                            break;
+                    }
+                }
+                catch (SqlException ex)
+                {
+                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record" : "SQL exception detected.";
+                    return new HttpStatusCodeResult(500, message);
+                }
+                catch (DuplicateNameException ex)
+                {
+                    return new HttpStatusCodeResult(500, ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return new HttpStatusCodeResult(500, "Csv data import failed.");
+                }
+                return new ContentResult { Content = report };
+            }
+            return new HttpStatusCodeResult(400, "File not found or incorrect file format.");
+        }
+
+        private string ProcessTransactions(Stream inputStream)
         {
             string rowsCopied;
             //Mapping columns programmatically
@@ -35,7 +74,7 @@ namespace FirstIteration.Services
             //Map csv columns to sql table columns and data types (done manually for now)
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "uniqueid_c", new KeyValuePair<string, Type>("UniqueID", typeof(int)) },
             { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) }, { "psplanmasterid_c", new KeyValuePair<string, Type>("FundMasterID", typeof(int)) },
-            { "transactioncode_c", new KeyValuePair<string, Type>("TransType", typeof(string)) }, { "transactiondate_d", new KeyValuePair<string, Type>("TransDate", typeof(DateTime)) }, { "transfer", new KeyValuePair<string, Type>("TransTransfer", typeof(decimal)) },
+            { "transactioncode_c", new KeyValuePair<string, Type>("TransType", typeof(string)) }, { "transactiondate_d", new KeyValuePair<string, Type>("TransDate", typeof(DateTime)) }, { "tranfer", new KeyValuePair<string, Type>("TransTransfer", typeof(decimal)) },
             { "adj", new KeyValuePair<string, Type>("TransAdjustment", typeof(decimal)) }, { "credit", new KeyValuePair<string, Type>("TransCredit", typeof(decimal)) }, { "charge", new KeyValuePair<string, Type>("TransCharge", typeof(decimal)) }};
 
             rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) =>
@@ -56,7 +95,7 @@ namespace FirstIteration.Services
             return rowsCopied;
         }
 
-        public string ProcessDepartments(Stream inputStream)
+        private string ProcessDepartments(Stream inputStream)
         {
             string rowsCopied;
             Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>>
@@ -77,7 +116,7 @@ namespace FirstIteration.Services
             return rowsCopied;
         }
 
-        public string ProcessStaff(Stream inputStream)
+        private string ProcessStaff(Stream inputStream)
         {
             string rowsCopied;
 

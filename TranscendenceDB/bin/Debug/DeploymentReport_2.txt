@@ -1,0 +1,27 @@
+﻿** Highlights
+     Tables that will be rebuilt
+       [dbo].[Transactions]
+     Clustered indexes that will be dropped
+       None
+     Clustered indexes that will be created
+       None
+     Possible data issues
+       None
+
+** User actions
+     Table rebuild
+       [dbo].[Transactions] (Table)
+     Alter
+       [dbo].[GetTransCategoriesByDept] (Procedure)
+
+** Supporting actions
+     Drop
+       [dbo].[FK_FundMasterID] (Foreign Key)
+       [dbo].[FK_Staff] (Foreign Key)
+       [dbo].[FK_Dept] (Foreign Key)
+     Create
+       [dbo].[FK_FundMasterID] (Foreign Key)
+       [dbo].[FK_Staff] (Foreign Key)
+       [dbo].[FK_Dept] (Foreign Key)
+     Refresh
+       [dbo].[GetTransCategoriesForPie] (Procedure)

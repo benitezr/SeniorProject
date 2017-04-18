@@ -68,6 +68,7 @@
     <Build Include="dbo\Tables\Departments.sql" />
     <Build Include="dbo\Tables\Staff.sql" />
     <Build Include="dbo\Tables\Funding_Sources.sql" />
-    <Build Include="dbo\Stored Procedures\GetTransCategoriesForLine.sql" />
+    <Build Include="dbo\Stored Procedures\GetTransCategoriesForPie.sql" />
+    <Build Include="dbo\Stored Procedures\GetTransCategoriesByDept.sql" />
   </ItemGroup>
 </Project>
