@@ -49,7 +49,7 @@ namespace FirstIteration.Services
                 }
                 catch (SqlException ex)
                 {
-                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record" : "SQL exception detected.";
+                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record." : "SQL exception detected.";
                     return new HttpStatusCodeResult(500, message);
                 }
                 catch (DuplicateNameException ex)
@@ -68,7 +68,7 @@ namespace FirstIteration.Services
         private string ProcessTransactions(Stream inputStream)
         {
             string rowsCopied;
-            //Mapping columns programmatically
+            //Mapping columns programmatically (need database tables to match csv columns)
             //Dictionary<string, Type> columns = PropertiesToDictionary(typeof(Transaction), p => !p.GetGetMethod().IsVirtual && p.Name != "TransAmount");
 
             //Map csv columns to sql table columns and data types (done manually for now)
