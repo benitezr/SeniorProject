@@ -47,15 +47,23 @@ namespace FirstIteration.Services
                             break;
                     }
                 }
-                catch (SqlException ex)
+                catch (CsvMissingFieldException ex)
                 {
-                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record." : "SQL exception detected.";
-                    return new HttpStatusCodeResult(500, message);
+                    return new HttpStatusCodeResult(500, ex.Message);
+                }
+                catch (CsvHelperException ex)
+                {
+                    return new HttpStatusCodeResult(500, "Error occurred while parsing CSV data.");
                 }
                 catch (DuplicateNameException ex)
                 {
                     return new HttpStatusCodeResult(500, ex.Message);
                 }
+                catch (SqlException ex)
+                {
+                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record." : "SQL exception detected.";
+                    return new HttpStatusCodeResult(500, message);
+                }                
                 catch (Exception ex)
                 {
                     return new HttpStatusCodeResult(500, "Csv data import failed.");
