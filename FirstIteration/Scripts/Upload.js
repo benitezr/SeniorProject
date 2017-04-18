@@ -19,7 +19,10 @@
                         buttonName: "btn-primary"
                     });
 
-                    $("#upload-modal").modal();
+                    $("#upload-modal").modal({
+                        backdrop: "static",
+                        keyboard: false
+                    });
                 }
             });
         } else {
@@ -41,13 +44,13 @@
         }
 
         var extension = $("#file").val().split(".").pop().toUpperCase();
-        if (extension != "CSV") {
+        if (extension !== "CSV") {
             $("#help-block").html("<font color='red'>Incorrect file type uploaded!</font>");
-            $("#file").filestyle("clear")
+            $("#file").filestyle("clear");
             return;
         }
-
-        $("#submit").prop("disabled", true);
+        
+        $("#modal-content :button").prop("disabled", true);
         $("#help-block").html("Please wait...");
 
         $.ajax({
@@ -58,10 +61,12 @@
             type: "POST",
             success: function (response) {
                 $("#help-block").html("<font color='green'>Upload successful: " + response + " rows inserted</font>");
-                $("#submit").prop("disabled", false);
             },
             error: function(xhr, status, message){
                 $("#help-block").html("<font color='red'>Error " + xhr.status + ": " + message + "</font>");
+            },
+            complete: function () {
+                $("#modal-content :button").prop("disabled", false);
             }
         });
     }

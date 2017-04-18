@@ -18,6 +18,14 @@ namespace FirstIteration.Services
         private delegate void ProcessDelegate(CsvReader cr, DataTable dt);
         private Dictionary<string, int> _departments;
 
+        public ImportServices()
+        {
+            using (var context = new transcendenceEntities())
+            {
+                _departments = context.Departments.ToDictionary(d => d.DeptName.Replace("\r\n", "").Trim(), d => d.DeptID);
+            }
+        }
+
         public string ProcessTransactions(Stream inputStream)
         {
             string rowsCopied;
@@ -29,8 +37,6 @@ namespace FirstIteration.Services
             { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) }, { "psplanmasterid_c", new KeyValuePair<string, Type>("FundMasterID", typeof(int)) },
             { "transactioncode_c", new KeyValuePair<string, Type>("TransType", typeof(string)) }, { "transactiondate_d", new KeyValuePair<string, Type>("TransDate", typeof(DateTime)) }, { "transfer", new KeyValuePair<string, Type>("TransTransfer", typeof(decimal)) },
             { "adj", new KeyValuePair<string, Type>("TransAdjustment", typeof(decimal)) }, { "credit", new KeyValuePair<string, Type>("TransCredit", typeof(decimal)) }, { "charge", new KeyValuePair<string, Type>("TransCharge", typeof(decimal)) }};
-
-            LoadDeptDictionary();
 
             rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) =>
             {
@@ -59,8 +65,12 @@ namespace FirstIteration.Services
             rowsCopied = Process(inputStream, "Departments", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) =>
             {
                 var row = dataTable.NewRow();
-                row["DeptName"] = csvreader.GetField("DeptName");
+                string deptName = csvreader.GetField("DeptName");
 
+                if (_departments.ContainsKey(deptName))
+                    throw new DuplicateNameException(string.Format("Department name ({0}) already exists.", deptName));
+                
+                row["DeptName"] = deptName;                                     
                 dataTable.Rows.Add(row);
             });
 
@@ -70,19 +80,26 @@ namespace FirstIteration.Services
         public string ProcessStaff(Stream inputStream)
         {
             string rowsCopied;
-            LoadDeptDictionary();
 
+            Dictionary<string, KeyValuePair<string, Type>> columnMaps = new Dictionary<string, KeyValuePair<string, Type>> { { "staffcode_c", new KeyValuePair<string, Type>("StaffID", typeof(int)) },
+            { "DeptName", new KeyValuePair<string, Type>("DeptID", typeof(int)) }, { "StaffName", new KeyValuePair<string, Type>("StaffName", typeof(string)) } };
 
+            rowsCopied = Process(inputStream, "Staff", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) => 
+            {
+                var row = dataTable.NewRow();
+
+                foreach (KeyValuePair<string, KeyValuePair<string, Type>> item in columnMaps)
+                {
+                    if (item.Value.Key == "DeptID")
+                        row[item.Value.Key] = _departments[csvreader.GetField(item.Key)];
+                    else
+                        row[item.Value.Key] = Cast(csvreader.GetField(item.Key), item.Value.Value);
+                }
+
+                dataTable.Rows.Add(row);
+            });
 
             return rowsCopied;
-        }
-
-        private void LoadDeptDictionary()
-        {
-            using (var context = new transcendenceEntities())
-            {
-                _departments = context.Departments.ToDictionary(d => d.DeptName, d => d.DeptID);
-            }
         }
 
         private Dictionary<string, Type> PropertiesToDictionary(Type type, Func<System.Reflection.PropertyInfo, bool> predicate)

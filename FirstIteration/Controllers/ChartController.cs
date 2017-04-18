@@ -11,6 +11,7 @@ using System.Data;
 using FirstIteration.Services;
 using System.IO;
 using System.Threading.Tasks;
+using System.Data.SqlClient;
 
 namespace FirstIteration.Controllers
 {
@@ -71,19 +72,34 @@ namespace FirstIteration.Controllers
             if (file.ContentLength > 0 && Path.GetExtension(file.FileName).ToUpper().Contains("CSV"))
             {
                 string report = "", tableUpload = System.Web.HttpContext.Current.Request.Form["UploadType"];
-                switch (tableUpload)
+                try
                 {
-                    //case "Transactions":
-                    //    ImportService.ProcessTransactions(file.InputStream, progress);
-                    //    break;
-                    case "Departments":                      
-                        report = ImportService.ProcessDepartments(file.InputStream);                                                                   
-                        break;
-                    //case "Staff":
-                    //    ImportService.ProcessStaff(file.InputStream);
-                    //    break;
+                    switch (tableUpload)
+                    {
+                        //case "Transactions":
+                        //    ImportService.ProcessTransactions(file.InputStream, progress);
+                        //    break;
+                        case "Departments":
+                            report = ImportService.ProcessDepartments(file.InputStream);
+                            break;
+                        case "Staff":
+                            report = ImportService.ProcessStaff(file.InputStream);
+                            break;
+                    }
                 }
-                System.Threading.Thread.Sleep(5000);                               
+                catch (SqlException ex)
+                {
+                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record" : "SQL exception detected.";
+                    return new HttpStatusCodeResult(500, message);
+                }
+                catch (DuplicateNameException ex)
+                {
+                    return new HttpStatusCodeResult(500, ex.Message);
+                }
+                catch (Exception ex)
+                {
+                    return new HttpStatusCodeResult(500, "Csv data import failed.");
+                }                                              
                 return Content(report);
             }
             return new HttpStatusCodeResult(400, "File not found or incorrect file format.");
