@@ -88,13 +88,39 @@ namespace FirstIteration.Services
             rowsCopied = Process(inputStream, "Transactions", columnMaps.Values.ToDictionary(kvp => kvp.Key, kvp => kvp.Value), (csvreader, dataTable) =>
             {
                 var row = dataTable.NewRow();
+                string transType = "";
+                int uniqueID = 0;
+                DateTime transDate = new DateTime();               
 
                 foreach (KeyValuePair<string, KeyValuePair<string, Type>> item in columnMaps)
                 {
                     if (item.Value.Key == "DeptID")
                         row[item.Value.Key] = _departments[csvreader.GetField(item.Key)];
                     else
-                        row[item.Value.Key] = Cast(csvreader.GetField(item.Key), item.Value.Value);
+                    {
+                        var field = Cast(csvreader.GetField(item.Key), item.Value.Value);
+                        switch (item.Value.Key)
+                        {
+                            case "UniqueID":
+                                uniqueID = Cast(csvreader.GetField(item.Key), item.Value.Value);
+                                break;
+                            case "TransDate":
+                                transDate = Cast(csvreader.GetField(item.Key), item.Value.Value);
+                                break;
+                            case "TransType":
+                                transType = Cast(csvreader.GetField(item.Key), item.Value.Value);
+                                break;
+                        }
+                        row[item.Value.Key] = field;
+                    }                    
+                }
+
+                using (var context = new transcendenceEntities())
+                {
+                    if (context.Transactions.Where(t => t.UniqueID == uniqueID && t.TransType == transType
+                        && t.TransDate == transDate).FirstOrDefault() != null)
+                        throw new DuplicateNameException(string.Format("Transaction record with uniqueid ({0}), date ({1}), and code ({2}) already exists.", uniqueID.ToString(),
+                            transDate.ToString("d"), transType));
                 }
 
                 dataTable.Rows.Add(row);
