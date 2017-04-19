@@ -414,3 +414,5 @@ C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\Fi
 C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\FirstIteration\obj\Debug\FirstIteration.csprojResolveAssemblyReference.cache
 C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\FirstIteration\obj\Debug\FirstIteration.dll
 C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\FirstIteration\obj\Debug\FirstIteration.pdb
+C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\FirstIteration\bin\CsvHelper.dll
+C:\Users\Brian\Documents\Visual Studio 2015\Github\Source\Repos\SeniorProject\FirstIteration\bin\CsvHelper.xml
