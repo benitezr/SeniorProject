@@ -1,0 +1,31 @@
+﻿** Highlights
+     Tables that will be rebuilt
+       [dbo].[Funding_Sources]
+     Clustered indexes that will be dropped
+       None
+     Clustered indexes that will be created
+       None
+     Possible data issues
+       The type for column TransType in table [dbo].[Transactions] is currently  CHAR (10) NOT NULL but is being changed to 
+         CHAR (1) NOT NULL. Data loss could occur.
+
+** User actions
+     Table rebuild
+       [dbo].[Funding_Sources] (Table)
+     Alter
+       [dbo].[Staff] (Table)
+       [dbo].[Transactions] (Table)
+     Create
+       [dbo].[GetTransCategoriesByDept] (Procedure)
+       [dbo].[GetTransCategoriesForPie] (Procedure)
+
+** Supporting actions
+     Drop
+       [dbo].[FK_FundMasterID] (Foreign Key)
+     Create
+       [dbo].[FK_FundMasterID] (Foreign Key)
+
+The type for column TransType in table [dbo].[Transactions] is currently  CHAR (10) NOT NULL but is being changed to  CHAR (1) NOT NULL. Data loss could occur.
+If this deployment is executed, changes to [dbo].[Funding_Sources] might introduce run-time errors in [dbo].[GetTransCategoriesForLine].
+If this deployment is executed, changes to [dbo].[Transactions] might introduce run-time errors in [dbo].[GetTransCategoriesForLine].
+

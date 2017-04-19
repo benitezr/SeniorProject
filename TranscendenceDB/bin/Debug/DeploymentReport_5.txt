@@ -1,0 +1,28 @@
+﻿** Highlights
+     Tables that will be rebuilt
+       [dbo].[Funding_Sources]
+     Clustered indexes that will be dropped
+       None
+     Clustered indexes that will be created
+       None
+     Possible data issues
+       None
+
+** User actions
+     Table rebuild
+       [dbo].[Funding_Sources] (Table)
+     Alter
+       [dbo].[Staff] (Table)
+       [dbo].[Transactions] (Table)
+
+** Supporting actions
+     Drop
+       [dbo].[FK_FundMasterID] (Foreign Key)
+     Create
+       [dbo].[FK_FundMasterID] (Foreign Key)
+     Refresh
+       [dbo].[GetTransCategoriesByDept] (Procedure)
+       [dbo].[GetTransCategoriesForPie] (Procedure)
+
+The column StaffName on table [dbo].[Staff] must be changed from NULL to NOT NULL. If the table contains data, the ALTER script may not work. To avoid this issue, you must add values to this column for all rows or mark it as allowing NULL values, or enable the generation of smart-defaults as a deployment option.
+
