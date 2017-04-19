@@ -49,7 +49,7 @@ namespace FirstIteration.Services
                 }
                 catch (CsvMissingFieldException ex)
                 {
-                    return new HttpStatusCodeResult(500, ex.Message);
+                    return new HttpStatusCodeResult(400, ex.Message);
                 }
                 catch (CsvHelperException ex)
                 {
@@ -61,7 +61,13 @@ namespace FirstIteration.Services
                 }
                 catch (SqlException ex)
                 {
-                    string message = ex.Message.Contains("duplicate") ? "Cannot insert duplicate record." : "SQL exception detected.";
+                    string message = "SQL exception detected.";
+
+                    if (ex.Message.Contains("duplicate"))
+                        message = "Cannot insert duplicate record.";
+                    else if (ex.Message.Contains("constraint"))
+                        message = "Constraint violation occurred.";
+
                     return new HttpStatusCodeResult(500, message);
                 }                
                 catch (Exception ex)
@@ -196,7 +202,7 @@ namespace FirstIteration.Services
                 conn.Open();
                 using (var transaction = conn.BeginTransaction(IsolationLevel.Serializable))
                 {
-                    using (var bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.Default, transaction))
+                    using (var bulkCopy = new SqlBulkCopy(conn, SqlBulkCopyOptions.CheckConstraints, transaction))
                     {
                         bulkCopy.DestinationTableName = tableName;
                         bulkCopy.NotifyAfter = notifyAfter;
