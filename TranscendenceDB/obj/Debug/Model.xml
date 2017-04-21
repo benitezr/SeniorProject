@@ -511,28 +511,34 @@ end]]></Value>
 				<Property Name="HeaderContents" Value="CREATE procedure [dbo].[GetTransCategoriesByDept]&#xD;&#xA;(&#xD;&#xA;&#x9;@year int,&#xD;&#xA;&#x9;@deptid int = null,&#xD;&#xA;&#x9;@fundcategory varchar(10) = null,&#xD;&#xA;&#x9;@staffid int = null&#xD;&#xA;)&#xD;&#xA;as" />
 			</Annotation>
 		</Element>
-		<Element Type="SqlProcedure" Name="[dbo].[GetTransCategoriesForLine]">
+		<Element Type="SqlProcedure" Name="[dbo].[GetTransCategoriesByTotal]">
 			<Property Name="BodyScript">
 				<Value><![CDATA[
 begin
-	select MonthList.Months as [Month], isnull(F.FundCategory, C.FundCategory) as [Category], isnull(F.Amount, 0) as [Amount]
-	from (
-		values (1), (2), (3), (4), (5), 
-				(6), (7), (8), (9), (10), (11), (12)
-	) [MonthList](Months)
-	Left Join (
-		select datepart(month, TransDate) as [Month],FundCategory, Sum(TransAmount) as [Amount]
-		from Transactions, Funding_Sources
-		where (@deptid is null or DeptID = @deptid) and Transactions.FundMasterID = Funding_Sources.FundMasterID
-		group by FundCategory, datepart(month, TransDate)
-	) F on F.[Month] = [Months]
-	Left Join (
-		select FundCategory
-		from Transactions, Funding_Sources
-		where (@deptid is null or DeptID = @deptid) and Transactions.FundMasterID = Funding_Sources.FundMasterID
-		group by FundCategory
-	) C on F.Amount is null and F.FundCategory is null
-	order by [Month]
+	select MonthList.Months as [Months], isnull(sum(F.Amount), 0) as [Amount]
+		from (
+			values (1), (2), (3), (4), (5), 
+					(6), (7), (8), (9), (10), (11), (12)
+		) [MonthList](Months)
+		Left Join (
+			select case when @fundcategory is null then FundCategory else FundCodeName end as [Category]
+			from Transactions, Funding_Sources
+			where (@deptid is null or DeptID = @deptid) and Transactions.FundMasterID = Funding_Sources.FundMasterID and 
+			(@fundcategory is null or FundCategory like '%' + @fundcategory + '%') and
+			(@staffid is null or StaffID = @staffid) and datepart(year, TransDate) = @year
+			group by case when @fundcategory is null then FundCategory else FundCodeName end
+		) C on C.Category is not null
+		Left Join (
+			select datepart(month, TransDate) as [Month],case when @fundcategory is null then FundCategory else FundCodeName end as [Category], 
+				Sum(TransAmount) as [Amount]
+			from Transactions, Funding_Sources
+			where (@deptid is null or DeptID = @deptid) and Transactions.FundMasterID = Funding_Sources.FundMasterID and 
+				(@fundcategory is null or FundCategory like '%' + @fundcategory + '%') and
+				(@staffid is null or StaffID = @staffid) and datepart(year, TransDate) = @year
+			group by case when @fundcategory is null then FundCategory else FundCodeName end, datepart(month, TransDate)
+		) F on F.[Month] = [Months] and F.Category = C.Category 
+	group by Months
+	order by Months
 end]]></Value>
 			</Property>
 			<Property Name="IsAnsiNullsOn" Value="True" />
@@ -544,16 +550,16 @@ end]]></Value>
 					<References Name="[dbo].[Funding_Sources]" />
 				</Entry>
 				<Entry>
-					<References Name="[dbo].[Transactions].[TransDate]" />
+					<References Name="[dbo].[GetTransCategoriesByTotal].[@fundcategory]" />
 				</Entry>
 				<Entry>
 					<References Name="[dbo].[Funding_Sources].[FundCategory]" />
 				</Entry>
 				<Entry>
-					<References Name="[dbo].[Transactions].[TransAmount]" />
+					<References Name="[dbo].[Funding_Sources].[FundCodeName]" />
 				</Entry>
 				<Entry>
-					<References Name="[dbo].[GetTransCategoriesForLine].[@deptid]" />
+					<References Name="[dbo].[GetTransCategoriesByTotal].[@deptid]" />
 				</Entry>
 				<Entry>
 					<References Name="[dbo].[Transactions].[DeptID]" />
@@ -565,12 +571,39 @@ end]]></Value>
 					<References Name="[dbo].[Funding_Sources].[FundMasterID]" />
 				</Entry>
 				<Entry>
-					<References Name="[dbo].[Funding_Sources].[FundCategory]" />
+					<References Name="[dbo].[GetTransCategoriesByTotal].[@staffid]" />
+				</Entry>
+				<Entry>
+					<References Name="[dbo].[Transactions].[StaffID]" />
+				</Entry>
+				<Entry>
+					<References Name="[dbo].[Transactions].[TransDate]" />
+				</Entry>
+				<Entry>
+					<References Name="[dbo].[GetTransCategoriesByTotal].[@year]" />
+				</Entry>
+				<Entry>
+					<References Name="[dbo].[Transactions].[TransAmount]" />
 				</Entry>
 			</Relationship>
 			<Relationship Name="Parameters">
 				<Entry>
-					<Element Type="SqlSubroutineParameter" Name="[dbo].[GetTransCategoriesForLine].[@deptid]">
+					<Element Type="SqlSubroutineParameter" Name="[dbo].[GetTransCategoriesByTotal].[@year]">
+						<Relationship Name="Type">
+							<Entry>
+								<Element Type="SqlTypeSpecifier">
+									<Relationship Name="Type">
+										<Entry>
+											<References ExternalSource="BuiltIns" Name="[int]" />
+										</Entry>
+									</Relationship>
+								</Element>
+							</Entry>
+						</Relationship>
+					</Element>
+				</Entry>
+				<Entry>
+					<Element Type="SqlSubroutineParameter" Name="[dbo].[GetTransCategoriesByTotal].[@deptid]">
 						<Property Name="DefaultExpressionScript">
 							<Value><![CDATA[null]]></Value>
 						</Property>
@@ -588,17 +621,35 @@ end]]></Value>
 					</Element>
 				</Entry>
 				<Entry>
-					<Element Type="SqlSubroutineParameter" Name="[dbo].[GetTransCategoriesForLine].[@fundcategory]">
+					<Element Type="SqlSubroutineParameter" Name="[dbo].[GetTransCategoriesByTotal].[@fundcategory]">
 						<Property Name="DefaultExpressionScript">
-							<Value><![CDATA['%']]></Value>
+							<Value><![CDATA[null]]></Value>
 						</Property>
 						<Relationship Name="Type">
 							<Entry>
 								<Element Type="SqlTypeSpecifier">
-									<Property Name="Length" Value="5" />
+									<Property Name="Length" Value="10" />
 									<Relationship Name="Type">
 										<Entry>
 											<References ExternalSource="BuiltIns" Name="[varchar]" />
+										</Entry>
+									</Relationship>
+								</Element>
+							</Entry>
+						</Relationship>
+					</Element>
+				</Entry>
+				<Entry>
+					<Element Type="SqlSubroutineParameter" Name="[dbo].[GetTransCategoriesByTotal].[@staffid]">
+						<Property Name="DefaultExpressionScript">
+							<Value><![CDATA[null]]></Value>
+						</Property>
+						<Relationship Name="Type">
+							<Entry>
+								<Element Type="SqlTypeSpecifier">
+									<Relationship Name="Type">
+										<Entry>
+											<References ExternalSource="BuiltIns" Name="[int]" />
 										</Entry>
 									</Relationship>
 								</Element>
@@ -613,10 +664,10 @@ end]]></Value>
 				</Entry>
 			</Relationship>
 			<Annotation Type="SysCommentsObjectAnnotation">
-				<Property Name="Length" Value="982" />
+				<Property Name="Length" Value="1613" />
 				<Property Name="StartLine" Value="1" />
 				<Property Name="StartColumn" Value="1" />
-				<Property Name="HeaderContents" Value="CREATE procedure [dbo].[GetTransCategoriesForLine]&#xD;&#xA;(&#xD;&#xA;&#x9;@deptid as int = null,&#xD;&#xA;&#x9;@fundcategory as varchar(5) = '%'&#xD;&#xA;)&#xD;&#xA;as" />
+				<Property Name="HeaderContents" Value="CREATE procedure [dbo].[GetTransCategoriesByTotal]&#xD;&#xA;(&#xD;&#xA;&#x9;@year int,&#xD;&#xA;&#x9;@deptid int = null,&#xD;&#xA;&#x9;@fundcategory varchar(10) = null,&#xD;&#xA;&#x9;@staffid int = null&#xD;&#xA;)&#xD;&#xA;as" />
 			</Annotation>
 		</Element>
 		<Element Type="SqlProcedure" Name="[dbo].[GetTransCategoriesForPie]">
