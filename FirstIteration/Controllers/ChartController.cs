@@ -25,22 +25,22 @@ namespace FirstIteration.Controllers
 
         public ActionResult Dashboard()
         {
-            ViewBag.Department = DropDownService.GetAllDepartments();
-            ViewBag.Year = DropDownService.GetAllYears();
+            //ViewBag.Department = DropDownService.GetAllDepartments();
+            //ViewBag.Year = DropDownService.GetAllYears();
             return View();
         }
 
         public PartialViewResult _FundingSourceDropDowns()
         {
-            ViewBag.Department = DropDownService.GetAllDepartments();
-            ViewBag.Year = DropDownService.GetAllYears();
+            //ViewBag.Department = DropDownService.GetAllDepartments();
+            //ViewBag.Year = DropDownService.GetAllYears();
             return PartialView();
         }
 
         public PartialViewResult _EmployeeDropDowns()
         {
-            ViewBag.Department = DropDownService.GetAllDepartments();
-            ViewBag.Year = DropDownService.GetAllYears();
+            //ViewBag.Department = DropDownService.GetAllDepartments();
+            //ViewBag.Year = DropDownService.GetAllYears();
             return PartialView();
         }
 
@@ -74,12 +74,12 @@ namespace FirstIteration.Controllers
             return ImportService.Import(file, targetTable);
         }
 
-        public JsonResult StaffList(int Id, int? Year)
-        {
-            var staffList = StaffService.GetStaffList(Id);
-            var list = staffList.Select(m => new { value = m.StaffID, text = m.StaffName });
-            return Json(list, JsonRequestBehavior.AllowGet);
-        }
+        //public JsonResult StaffList(int Id, int? Year)
+        //{
+        //    var staffList = StaffService.GetStaffList(Id);
+        //    var list = staffList.Select(m => new { value = m.StaffID, text = m.StaffName });
+        //    return Json(list, JsonRequestBehavior.AllowGet);
+        //}
 
         public JsonResult FundingCategoryList(int Id, int? Year)
         {

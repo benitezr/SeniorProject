@@ -21,13 +21,13 @@ namespace FirstIteration.Services
         }
 
         public SelectList GetAllYears()
-        {        
+        {
             using (var db = new transcendenceEntities())
             {
                 var allYears = db.Transactions.Select(m => new { value = m.TransDate.Year, id = m.TransDate.Year }).Distinct().ToList();
-                return new SelectList(allYears, "id", "value", db.Transactions.Max(m => m.TransDate.Year));
+                return new SelectList(allYears, "id", "value", 2014);
             }
-            
+
         }
     }
 }

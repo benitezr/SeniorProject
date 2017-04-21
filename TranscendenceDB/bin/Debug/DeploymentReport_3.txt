@@ -1,0 +1,21 @@
+﻿** Highlights
+     Tables that will be rebuilt
+       [dbo].[StaffDept]
+     Clustered indexes that will be dropped
+       None
+     Clustered indexes that will be created
+       None
+     Possible data issues
+       None
+
+** User actions
+     Table rebuild
+       [dbo].[StaffDept] (Table)
+
+** Supporting actions
+     Drop
+       [dbo].[FK_StaffID_Bridge] (Foreign Key)
+       [dbo].[FK_DeptID_Bridge] (Foreign Key)
+     Create
+       [dbo].[FK_StaffID_Bridge] (Foreign Key)
+       [dbo].[FK_DeptID_Bridge] (Foreign Key)

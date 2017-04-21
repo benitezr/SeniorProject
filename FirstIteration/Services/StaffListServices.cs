@@ -10,19 +10,19 @@ namespace FirstIteration.Services
     public class StaffListServices
     {
         /* returns all staff that match deptID */
-        public List<Staff> GetStaffList(int id)
-        {
+        //public List<Staff> GetStaffList(int id)
+        //{
 
-            var allStaff = new List<Staff>();
-            using (var context = new transcendenceEntities())
-            {
-                allStaff = (from s in context.Staffs
-                             where s.DeptID == id
-                             select s).ToList();
+        //    var allStaff = new List<Staff>();
+        //    using (var context = new transcendenceEntities())
+        //    {
+        //        allStaff = (from s in context.Staffs
+        //                     where s.DeptID == id
+        //                     select s).ToList();
                 
                 
-            }
-            return allStaff;
-        }
+        //    }
+        //    return allStaff;
+        //}
     }
 }

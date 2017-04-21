@@ -1,0 +1,25 @@
+﻿Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.5245483.
+Generating the model took 00:00:01.2038024.
+Added the connection string to the Web.Config file.
+Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.2994256.
+Generating the model took 00:00:00.8380468.
+Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.2965424.
+Generating the model took 00:00:00.5200356.
+Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.2957815.
+Generating the model took 00:00:00.5019021.
+The 'connectionStrings' start tag on line 11 position 4 does not match the end tag of 'configuration'. Line 96, position 3.
+Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.2949519.
+Generating the model took 00:00:00.4789019.
+Added the connection string to the Web.Config file.
+Writing the .edmx file took 00:00:00.0003168.
+Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.2950084.
+Generating the model took 00:00:00.4822675.
+Generated model file: AzureDB.edmx.
+Loading metadata from the database took 00:00:00.2950748.
+Generating the model took 00:00:00.6149508.
