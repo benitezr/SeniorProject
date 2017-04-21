@@ -13,7 +13,7 @@ SET @amtSum = (select Sum(TransAmount) as [Amount]
 			(@fundcategory is null or FundCategory like '%' + @fundcategory + '%') and
 			(@staffid is null or StaffID = @staffid) and datepart(year, TransDate) = @year)
 
-SELECT CASE WHEN @fundcategory is null THEN FundCategory ELSE FundCodeName END as [Category], (SUM(TransAmount) / @amtSum) * 100 as [Amount]
+SELECT CASE WHEN @fundcategory is null THEN FundCategory ELSE FundCodeName END as [Category], ISNULL((SUM(TransAmount) / NULLIF(@amtSum, 0)) * 100, 0) as [Amount]
 from Funding_Sources F, Transactions T
 where T.FundMasterID = F.FundMasterID and (@deptid is null or DeptID = @deptid) and 
 			(@fundcategory is null or FundCategory like '%' + @fundcategory + '%') and
