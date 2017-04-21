@@ -3,7 +3,7 @@
     [UniqueID]        INT            NOT NULL,
     [DeptID]          INT            NOT NULL,
     [StaffID]         INT            NOT NULL,
-    [FundMasterID]    VARCHAR (20)   NOT NULL,
+    [FundMasterID]    VARCHAR (30)   NOT NULL,
     [TransType]       CHAR (10)      NOT NULL,
     [TransDate]       DATE           NOT NULL,
     [TransTransfer]   DECIMAL (6, 2) NOT NULL,
