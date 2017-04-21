@@ -62,7 +62,7 @@ namespace FirstIteration.Controllers
         [HttpGet]
         public ActionResult UploadModal(string id)
         {
-            ViewBag.UploadType = id;
+            ViewBag.UploadType = id.Replace("_", " ");
             return PartialView();
         }
 
